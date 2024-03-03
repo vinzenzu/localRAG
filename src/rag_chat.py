@@ -1,26 +1,15 @@
 #!pip install --quiet langchain_community tiktoken langchain-openai langchainhub chromadb langchain langgraph tavily-python langchain-mistralai gpt4all
 
-
-use_llm = "mistral:instruct"
-
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.document_loaders import DirectoryLoader
-#from langchain_community.document_loaders import UnstructuredFileLoader
 from langchain_community.vectorstores import Chroma
-#from langchain_mistralai import MistralAIEmbeddings
 from langchain_community.embeddings import GPT4AllEmbeddings
-#from langchain_community.embeddings import LlamaCppEmbeddings
-
-# Load
-#url = "https://lilianweng.github.io/posts/2023-06-23-agent/"
-#loader = WebBaseLoader(url)
-#docs = loader.load()
 
 import os
 
 # Embed and index
 embedding = GPT4AllEmbeddings()
+use_llm = "mistral:instruct"
 vectorstore = None
 
 if not os.path.isdir('../data'):
@@ -42,16 +31,10 @@ if not os.path.isdir('../data'):
     )
 else:
     vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embedding)
-    #vectordb = Chroma(
-    #    persist_directory=self._persist_folder, embedding_function=self._embeddings
-    #)
-    #return vectordb.as_retriever(**kwargs)
 
 retriever = vectorstore.as_retriever()
 
 from typing import Annotated, Dict, TypedDict
-
-from langchain_core.messages import BaseMessage
 
 
 class GraphState(TypedDict):
@@ -64,23 +47,15 @@ class GraphState(TypedDict):
 
     keys: Dict[str, any]
 
-import json
-import operator
-from typing import Annotated, Sequence, TypedDict
-
 from langchain import hub
 from langchain_core.output_parsers import JsonOutputParser
 from langchain.prompts import PromptTemplate
 from langchain.schema import Document
 from langchain_community.chat_models import ChatOllama
 from langchain_community.tools.tavily_search import TavilySearchResults
-from langchain_community.vectorstores import Chroma
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
-from langchain_mistralai.chat_models import ChatMistralAI
 
 ### Nodes ###
-
 
 def retrieve(state):
     """
@@ -114,7 +89,6 @@ def generate(state):
     state_dict = state["keys"]
     question = state_dict["question"]
     documents = state_dict["documents"]
-    #local = state_dict["local"]
 
     # Prompt
     prompt = hub.pull("rlm/rag-prompt")
@@ -151,7 +125,6 @@ def grade_documents(state):
     state_dict = state["keys"]
     question = state_dict["question"]
     documents = state_dict["documents"]
-    #local = state_dict["local"]
 
     # LLM
     llm = ChatOllama(model=use_llm, format="json", temperature=0)
@@ -212,7 +185,6 @@ def transform_query(state):
     state_dict = state["keys"]
     question = state_dict["question"]
     documents = state_dict["documents"]
-    #local = state_dict["local"]
 
     # Create a prompt template with format instructions and the query
     prompt = PromptTemplate(
@@ -254,7 +226,6 @@ def web_search(state):
     state_dict = state["keys"]
     question = state_dict["question"]
     documents = state_dict["documents"]
-    #local = state_dict["local"]
 
     tool = TavilySearchResults()
     docs = tool.invoke({"query": question})
@@ -342,21 +313,3 @@ for output in app.stream(inputs):
 
 # Final generation
 pprint.pprint(value["keys"]["generation"])
-
-# Run
-"""inputs = {
-    "keys": {
-        "question": "Explain how the different types of agent memory work?",
-    }
-}
-for output in app.stream(inputs):
-    for key, value in output.items():
-        # Node
-        pprint.pprint(f"Node '{key}':")
-        # Optional: print full state at each node
-        # pprint.pprint(value["keys"], indent=2, width=80, depth=None)
-    pprint.pprint("\n---\n")
-
-# Final generation
-pprint.pprint(value["keys"]["generation"])
-"""
