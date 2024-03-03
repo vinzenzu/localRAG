@@ -5,32 +5,48 @@ use_llm = "mistral:instruct"
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import WebBaseLoader
+from langchain_community.document_loaders import DirectoryLoader
+#from langchain_community.document_loaders import UnstructuredFileLoader
 from langchain_community.vectorstores import Chroma
-from langchain_mistralai import MistralAIEmbeddings
+#from langchain_mistralai import MistralAIEmbeddings
 from langchain_community.embeddings import GPT4AllEmbeddings
 #from langchain_community.embeddings import LlamaCppEmbeddings
 
 # Load
-url = "https://lilianweng.github.io/posts/2023-06-23-agent/"
-loader = WebBaseLoader(url)
-docs = loader.load()
+#url = "https://lilianweng.github.io/posts/2023-06-23-agent/"
+#loader = WebBaseLoader(url)
+#docs = loader.load()
 
-# Split
-text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-    chunk_size=500, chunk_overlap=100
-)
-all_splits = text_splitter.split_documents(docs)
+import os
 
 # Embed and index
 embedding = GPT4AllEmbeddings()
+vectorstore = None
 
-# Index
-vectorstore = Chroma.from_documents(
-    documents=all_splits,
-    collection_name="rag-chroma",
-    embedding=embedding,
-    persist_directory="./chroma_db"
-)
+if not os.path.isdir('../data'):
+    loader = DirectoryLoader('../data')#, glob="**/*.txt")
+    docs = loader.load()
+
+    # Split
+    text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+        chunk_size=500, chunk_overlap=100
+    )
+    all_splits = text_splitter.split_documents(docs)
+
+    # Index
+    vectorstore = Chroma.from_documents(
+        documents=all_splits,
+        collection_name="rag-chroma",
+        embedding=embedding,
+        persist_directory="./chroma_db"
+    )
+else:
+    vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embedding)
+    #vectordb = Chroma(
+    #    persist_directory=self._persist_folder, embedding_function=self._embeddings
+    #)
+    #return vectordb.as_retriever(**kwargs)
+
 retriever = vectorstore.as_retriever()
 
 from typing import Annotated, Dict, TypedDict
@@ -313,7 +329,7 @@ app = workflow.compile()
 # Run
 inputs = {
     "keys": {
-        "question": "Explain how the different types of agent memory work?",
+        "question": "How do you compile regular expressions in Python?" #"Explain how the different types of agent memory work?",
     }
 }
 for output in app.stream(inputs):
@@ -328,7 +344,7 @@ for output in app.stream(inputs):
 pprint.pprint(value["keys"]["generation"])
 
 # Run
-inputs = {
+"""inputs = {
     "keys": {
         "question": "Explain how the different types of agent memory work?",
     }
@@ -343,3 +359,4 @@ for output in app.stream(inputs):
 
 # Final generation
 pprint.pprint(value["keys"]["generation"])
+"""
