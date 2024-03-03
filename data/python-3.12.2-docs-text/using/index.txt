@@ -1,0 +1,192 @@
+Python Setup and Usage
+**********************
+
+This part of the documentation is devoted to general information on
+the setup of the Python environment on different platforms, the
+invocation of the interpreter and things that make working with Python
+easier.
+
+* 1. Command line and environment
+
+  * 1.1. Command line
+
+    * 1.1.1. Interface options
+
+    * 1.1.2. Generic options
+
+    * 1.1.3. Miscellaneous options
+
+    * 1.1.4. Options you shouldn't use
+
+  * 1.2. Environment variables
+
+    * 1.2.1. Debug-mode variables
+
+* 2. Using Python on Unix platforms
+
+  * 2.1. Getting and installing the latest version of Python
+
+    * 2.1.1. On Linux
+
+    * 2.1.2. On FreeBSD and OpenBSD
+
+  * 2.2. Building Python
+
+  * 2.3. Python-related paths and files
+
+  * 2.4. Miscellaneous
+
+  * 2.5. Custom OpenSSL
+
+* 3. Configure Python
+
+  * 3.1. Build Requirements
+
+  * 3.2. Generated files
+
+    * 3.2.1. configure script
+
+  * 3.3. Configure Options
+
+    * 3.3.1. General Options
+
+    * 3.3.2. WebAssembly Options
+
+    * 3.3.3. Install Options
+
+    * 3.3.4. Performance options
+
+    * 3.3.5. Python Debug Build
+
+    * 3.3.6. Debug options
+
+    * 3.3.7. Linker options
+
+    * 3.3.8. Libraries options
+
+    * 3.3.9. Security Options
+
+    * 3.3.10. macOS Options
+
+    * 3.3.11. Cross Compiling Options
+
+  * 3.4. Python Build System
+
+    * 3.4.1. Main files of the build system
+
+    * 3.4.2. Main build steps
+
+    * 3.4.3. Main Makefile targets
+
+    * 3.4.4. C extensions
+
+  * 3.5. Compiler and linker flags
+
+    * 3.5.1. Preprocessor flags
+
+    * 3.5.2. Compiler flags
+
+    * 3.5.3. Linker flags
+
+* 4. Using Python on Windows
+
+  * 4.1. The full installer
+
+    * 4.1.1. Installation steps
+
+    * 4.1.2. Removing the MAX_PATH Limitation
+
+    * 4.1.3. Installing Without UI
+
+    * 4.1.4. Installing Without Downloading
+
+    * 4.1.5. Modifying an install
+
+  * 4.2. The Microsoft Store package
+
+    * 4.2.1. Known issues
+
+      * 4.2.1.1. Redirection of local data, registry, and temporary
+        paths
+
+  * 4.3. The nuget.org packages
+
+  * 4.4. The embeddable package
+
+    * 4.4.1. Python Application
+
+    * 4.4.2. Embedding Python
+
+  * 4.5. Alternative bundles
+
+  * 4.6. Configuring Python
+
+    * 4.6.1. Excursus: Setting environment variables
+
+    * 4.6.2. Finding the Python executable
+
+  * 4.7. UTF-8 mode
+
+  * 4.8. Python Launcher for Windows
+
+    * 4.8.1. Getting started
+
+      * 4.8.1.1. From the command-line
+
+      * 4.8.1.2. Virtual environments
+
+      * 4.8.1.3. From a script
+
+      * 4.8.1.4. From file associations
+
+    * 4.8.2. Shebang Lines
+
+    * 4.8.3. Arguments in shebang lines
+
+    * 4.8.4. Customization
+
+      * 4.8.4.1. Customization via INI files
+
+      * 4.8.4.2. Customizing default Python versions
+
+    * 4.8.5. Diagnostics
+
+    * 4.8.6. Dry Run
+
+    * 4.8.7. Install on demand
+
+    * 4.8.8. Return codes
+
+  * 4.9. Finding modules
+
+  * 4.10. Additional modules
+
+    * 4.10.1. PyWin32
+
+    * 4.10.2. cx_Freeze
+
+  * 4.11. Compiling Python on Windows
+
+  * 4.12. Other Platforms
+
+* 5. Using Python on a Mac
+
+  * 5.1. Getting and Installing Python
+
+    * 5.1.1. How to run a Python script
+
+    * 5.1.2. Running scripts with a GUI
+
+    * 5.1.3. Configuration
+
+  * 5.2. The IDE
+
+  * 5.3. Installing Additional Python Packages
+
+  * 5.4. GUI Programming
+
+  * 5.5. Distributing Python Applications
+
+  * 5.6. Other Resources
+
+* 6. Editors and IDEs

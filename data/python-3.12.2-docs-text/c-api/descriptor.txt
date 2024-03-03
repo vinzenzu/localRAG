@@ -1,0 +1,34 @@
+Descriptor Objects
+******************
+
+"Descriptors" are objects that describe some attribute of an object.
+They are found in the dictionary of type objects.
+
+PyTypeObject PyProperty_Type
+    * Part of the Stable ABI.*
+
+   The type object for the built-in descriptor types.
+
+PyObject *PyDescr_NewGetSet(PyTypeObject *type, struct PyGetSetDef *getset)
+    *Return value: New reference.** Part of the Stable ABI.*
+
+PyObject *PyDescr_NewMember(PyTypeObject *type, struct PyMemberDef *meth)
+    *Return value: New reference.** Part of the Stable ABI.*
+
+PyObject *PyDescr_NewMethod(PyTypeObject *type, struct PyMethodDef *meth)
+    *Return value: New reference.** Part of the Stable ABI.*
+
+PyObject *PyDescr_NewWrapper(PyTypeObject *type, struct wrapperbase *wrapper, void *wrapped)
+    *Return value: New reference.*
+
+PyObject *PyDescr_NewClassMethod(PyTypeObject *type, PyMethodDef *method)
+    *Return value: New reference.** Part of the Stable ABI.*
+
+int PyDescr_IsData(PyObject *descr)
+
+   Return non-zero if the descriptor objects *descr* describes a data
+   attribute, or "0" if it describes a method.  *descr* must be a
+   descriptor object; there is no error checking.
+
+PyObject *PyWrapper_New(PyObject*, PyObject*)
+    *Return value: New reference.** Part of the Stable ABI.*

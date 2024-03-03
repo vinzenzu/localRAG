@@ -1,0 +1,9 @@
+6. Editors and IDEs
+*******************
+
+There are a number of IDEs that support Python programming language.
+Many editors and IDEs provide syntax highlighting, debugging tools,
+and **PEP 8** checks.
+
+Please go to Python Editors and Integrated Development Environments
+for a comprehensive list.
