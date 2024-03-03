@@ -1,15 +1,7 @@
 #!pip install --quiet langchain_community tiktoken langchain-openai langchainhub chromadb langchain langgraph tavily-python langchain-mistralai gpt4all
 
-# Check API keys
-#import os
 
-#mistral_api_key = os.environ.get("MISTRAL_API_KEY")
-#tavily_api_key = os.environ.get("TAVILY_API_KEY")
-
-# Flags for running locally
-
-run_local = "Yes"
-local_llm = "mistral:instruct"
+use_llm = "mistral:instruct"
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import WebBaseLoader
@@ -30,20 +22,14 @@ text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
 all_splits = text_splitter.split_documents(docs)
 
 # Embed and index
-if run_local == "Yes":
-    # GPT4All
-    embedding = GPT4AllEmbeddings()
-    # Nomic v1 or v1.5
-    # embd_model_path = "/Users/rlm/Desktop/Code/llama.cpp/models/nomic-embd/nomic-embed-text-v1.Q4_K_S.gguf"
-    # embedding = LlamaCppEmbeddings(model_path=embd_model_path, n_batch=512)
-else:
-    embedding = MistralAIEmbeddings(mistral_api_key=mistral_api_key)
+embedding = GPT4AllEmbeddings()
 
 # Index
 vectorstore = Chroma.from_documents(
     documents=all_splits,
     collection_name="rag-chroma",
     embedding=embedding,
+    persist_directory="./chroma_db"
 )
 retriever = vectorstore.as_retriever()
 
@@ -93,9 +79,9 @@ def retrieve(state):
     print("---RETRIEVE---")
     state_dict = state["keys"]
     question = state_dict["question"]
-    local = state_dict["local"]
+    #local = state_dict["local"]
     documents = retriever.get_relevant_documents(question)
-    return {"keys": {"documents": documents, "local": local, "question": question}}
+    return {"keys": {"documents": documents, "question": question}}
 
 
 def generate(state):
@@ -112,18 +98,13 @@ def generate(state):
     state_dict = state["keys"]
     question = state_dict["question"]
     documents = state_dict["documents"]
-    local = state_dict["local"]
+    #local = state_dict["local"]
 
     # Prompt
     prompt = hub.pull("rlm/rag-prompt")
 
     # LLM
-    if local == "Yes":
-        llm = ChatOllama(model=local_llm, temperature=0)
-    else:
-        llm = ChatMistralAI(
-            model="mistral-medium", temperature=0, mistral_api_key=mistral_api_key
-        )
+    llm = ChatOllama(model=use_llm, temperature=0)
 
     # Post-processing
     def format_docs(docs):
@@ -154,15 +135,10 @@ def grade_documents(state):
     state_dict = state["keys"]
     question = state_dict["question"]
     documents = state_dict["documents"]
-    local = state_dict["local"]
+    #local = state_dict["local"]
 
     # LLM
-    if local == "Yes":
-        llm = ChatOllama(model=local_llm, format="json", temperature=0)
-    else:
-        llm = ChatMistralAI(
-            mistral_api_key=mistral_api_key, temperature=0, model="mistral-medium"
-        )
+    llm = ChatOllama(model=use_llm, format="json", temperature=0)
 
     prompt = PromptTemplate(
         template="""You are a grader assessing relevance of a retrieved document to a user question. \n 
@@ -200,7 +176,6 @@ def grade_documents(state):
         "keys": {
             "documents": filtered_docs,
             "question": question,
-            "local": local,
             "run_web_search": search,
         }
     }
@@ -221,7 +196,7 @@ def transform_query(state):
     state_dict = state["keys"]
     question = state_dict["question"]
     documents = state_dict["documents"]
-    local = state_dict["local"]
+    #local = state_dict["local"]
 
     # Create a prompt template with format instructions and the query
     prompt = PromptTemplate(
@@ -237,19 +212,14 @@ def transform_query(state):
 
     # Grader
     # LLM
-    if local == "Yes":
-        llm = ChatOllama(model=local_llm, temperature=0)
-    else:
-        llm = ChatMistralAI(
-            mistral_api_key=mistral_api_key, temperature=0, model="mistral-medium"
-        )
+    llm = ChatOllama(model=use_llm, temperature=0)
 
     # Prompt
     chain = prompt | llm | StrOutputParser()
     better_question = chain.invoke({"question": question})
 
     return {
-        "keys": {"documents": documents, "question": better_question, "local": local}
+        "keys": {"documents": documents, "question": better_question}
     }
 
 
@@ -268,7 +238,7 @@ def web_search(state):
     state_dict = state["keys"]
     question = state_dict["question"]
     documents = state_dict["documents"]
-    local = state_dict["local"]
+    #local = state_dict["local"]
 
     tool = TavilySearchResults()
     docs = tool.invoke({"query": question})
@@ -276,7 +246,7 @@ def web_search(state):
     web_results = Document(page_content=web_results)
     documents.append(web_results)
 
-    return {"keys": {"documents": documents, "local": local, "question": question}}
+    return {"keys": {"documents": documents, "question": question}}
 
 
 ### Edges
@@ -344,7 +314,6 @@ app = workflow.compile()
 inputs = {
     "keys": {
         "question": "Explain how the different types of agent memory work?",
-        "local": run_local,
     }
 }
 for output in app.stream(inputs):
@@ -362,7 +331,6 @@ pprint.pprint(value["keys"]["generation"])
 inputs = {
     "keys": {
         "question": "Explain how the different types of agent memory work?",
-        "local": run_local,
     }
 }
 for output in app.stream(inputs):
