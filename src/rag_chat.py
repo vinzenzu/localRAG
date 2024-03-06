@@ -1,6 +1,6 @@
-#!pip install --quiet langchain_community tiktoken langchain-openai langchainhub chromadb langchain langgraph tavily-python langchain-mistralai gpt4all
+#pip install --quiet langchain_community langchain gpt4all chromadb
 
-import pprint
+#import pprint
 
 import os
 
@@ -11,7 +11,6 @@ from langchain_community.embeddings import GPT4AllEmbeddings
 from langchain_community.chat_models import ChatOllama
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-from langchain.prompts import PromptTemplate
 
 
 def create_vector_store(db_directory, data_directory, embedding):
