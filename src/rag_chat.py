@@ -12,7 +12,10 @@ embedding = GPT4AllEmbeddings()
 use_llm = "mistral:instruct"
 vectorstore = None
 
+print("---STARTING PROGRAM---")
+
 if not os.path.isdir('../data'):
+    print("---CREATING VECTOR STORE (this may take a while)---")
     loader = DirectoryLoader('../data')#, glob="**/*.txt")
     docs = loader.load()
 
@@ -30,6 +33,7 @@ if not os.path.isdir('../data'):
         persist_directory="./chroma_db"
     )
 else:
+    print("---FETCHING VECTOR STORE---")
     vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embedding)
 
 retriever = vectorstore.as_retriever()
