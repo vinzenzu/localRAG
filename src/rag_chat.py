@@ -1,11 +1,8 @@
 #TODO
-# document sources for chunks
-# web interface (see video)
-# compare performance vs vanilla network, perhaps test rag on unseen scientific papers
+# write comments in code
+# write documentation in readme
 
-#pip install --quiet langchain_community langchain gpt4all chromadb unstructured tiktoken gradio pypdf
-
-#import pprint
+# pip install --quiet langchain_community langchain gpt4all chromadb unstructured tiktoken gradio pypdf
 
 import os
 
@@ -60,14 +57,15 @@ def create_vector_store(db_directory, splits, embedding):
     print("---CREATING VECTOR STORE (this may take a while)---")
 
     # create vector store and index
-    vectorstore = Chroma.from_documents(documents=splits, collection_name="rag-chroma", embedding=embedding, persist_directory=db_directory)
+    vectorstore = Chroma.from_documents(documents=splits, collection_name="rag-chroma", embedding=embedding,
+                                        persist_directory=db_directory)
 
     return vectorstore.as_retriever()
 
 
 def fetch_vector_store(db_directory, embedding):
     print("---FETCHING VECTOR STORE---")
-    vectorstore = Chroma(collection_name="rag-chroma", embedding_function=embedding, persist_directory=db_directory) # Chroma(persist_directory=db_directory, embedding_function=embedding)
+    vectorstore = Chroma(collection_name="rag-chroma", embedding_function=embedding, persist_directory=db_directory)
     return vectorstore.as_retriever()
 
 
@@ -80,15 +78,15 @@ def retrieve(retrieving, question):
 def context_formatting(documents):
     content = ""
     for index, document in enumerate(documents):
-        content = content + "[doc" + str(index+1) + "]=" + document.page_content.replace("\n", " ") + "\n\n"
+        content = content + "[doc" + str(index + 1) + "]=" + document.page_content.replace("\n", " ") + "\n\n"
     return content
 
 
 def source_formatting(documents):
     sources = ""
     for index, document in enumerate(documents):
-        sources = sources + "[doc" + str(index+1) + "]=" + document.metadata["source"] + "\n\n"
-    return sources
+        sources = sources + "[doc" + str(index + 1) + "]=" + document.metadata["source"] + "\n\n"
+    return sources.strip()
 
 
 def generate(question, documents, use_llm):
@@ -130,15 +128,12 @@ if __name__ == "__main__":
     else:
         retriever = fetch_vector_store(db_directory, embedding)
 
-    #input_question2 = "How do you compile regular expressions in Python?"
-    #input_question = "Explain the None type in Python."
-    #docs = retrieve(retriever, input_question)
-    #output = generate(input_question, context_formatting(docs), use_llm)
 
     def complete_rag(question):
         docs = retrieve(retriever, question)
         output = generate(question, context_formatting(docs), use_llm)
         return source_formatting(docs), output
+
 
     with gr.Blocks(theme=Base(), title="Q&A on your data with RAG") as demo:
         gr.Markdown("# Q&A on your data with RAG")
@@ -147,17 +142,9 @@ if __name__ == "__main__":
             button = gr.Button("Submit", variant="primary")
         with gr.Column():
             output1 = gr.Textbox(lines=1, max_lines=10, label="Sources")
-            output2 = gr.Textbox(lines=1, max_lines=10, label="Generated output by LLM, incorporating retrieved documents")
+            output2 = gr.Textbox(lines=1, max_lines=10,
+                                 label="Generated output by LLM, incorporating retrieved documents")
 
         button.click(complete_rag, textbox, outputs=[output1, output2])
 
     demo.launch()
-
-    #pprint.pprint(output)
-
-    #print(output)
-    #print(source_formatting(docs))
-
-    #print(docs)
-    #print(source_formatting(docs))
-    #print(context_formatting(docs))
