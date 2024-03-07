@@ -3,7 +3,7 @@
 # web interface (see video)
 # compare performance vs vanilla network, perhaps test rag on unseen scientific papers
 
-#pip install --quiet langchain_community langchain gpt4all chromadb unstructured tiktoken gradio
+#pip install --quiet langchain_community langchain gpt4all chromadb unstructured tiktoken gradio pypdf
 
 #import pprint
 
@@ -12,8 +12,12 @@ import os
 import gradio as gr
 from gradio.themes.base import Base
 
+import glob
+
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import DirectoryLoader
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import TextLoader
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import GPT4AllEmbeddings
 from langchain_community.chat_models import ChatOllama
@@ -21,14 +25,39 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
 
-def create_vector_store(db_directory, data_directory, embedding):
-    print("---CREATING VECTOR STORE (this may take a while)---")
-    loader = DirectoryLoader(data_directory)  # , glob="**/*.txt")
+def splits_from_pdf(pdf_directory):
+    docs = []
+    for file in glob.glob(pdf_directory + "/*.pdf"):
+        loader = PyPDFLoader(file)
+        doc = loader.load()
+        docs.extend(doc)
+
+    # split text into chunks with overlap
+    splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=500, chunk_overlap=100)
+    splits = splitter.split_documents(docs)
+    return splits
+
+
+def splits_from_text(text_directory):
+    loader = DirectoryLoader(text_directory, loader_cls=TextLoader)  # , glob="**/*.txt")
     docs = loader.load()
 
     # split text into chunks with overlap
     splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=500, chunk_overlap=100)
     splits = splitter.split_documents(docs)
+
+    return splits
+
+
+def splitting(data_directory):
+    if data_directory == "../pdf":
+        return splits_from_pdf(data_directory)
+    else:
+        return splits_from_text(data_directory)
+
+
+def create_vector_store(db_directory, splits, embedding):
+    print("---CREATING VECTOR STORE (this may take a while)---")
 
     # create vector store and index
     vectorstore = Chroma.from_documents(documents=splits, collection_name="rag-chroma", embedding=embedding, persist_directory=db_directory)
@@ -84,14 +113,20 @@ def generate(question, documents, use_llm):
 
 if __name__ == "__main__":
     print("---STARTING PROGRAM---")
+
     use_llm = "mistral:instruct"
     embedding = GPT4AllEmbeddings()
-    data_directory = '../data'
-    db_directory = './chroma_db'
-    retriever = None
+
+    # change to ../text if you want to use the .txt files stored in the 'text' folder
+    # change to ../pdf if you want to use the .pdf files stored in the 'pdf' folder
+    data_directory = '../pdf'
+
+    db_directory = '../chroma_db'
+
     # creating or fetching vector store
+    retriever = None
     if not os.path.isdir(db_directory):
-        retriever = create_vector_store(db_directory, data_directory, embedding)
+        retriever = create_vector_store(db_directory, splitting(data_directory), embedding)
     else:
         retriever = fetch_vector_store(db_directory, embedding)
 
