@@ -1,9 +1,13 @@
+__author__ = "Vinzenz Richard Ulrich"
+
 #TODO
-# write comments in code
 # write documentation in readme
 
-# pip install --quiet langchain_community langchain gpt4all chromadb unstructured tiktoken gradio pypdf
+# pip install gradio langchain gpt4all chromadb pypdf tiktoken
+# pip install --quiet gradio langchain gpt4all chromadb pypdf tiktoken
 
+
+# imports
 import os
 
 import gradio as gr
@@ -22,7 +26,12 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
 
-def splits_from_pdf(pdf_directory):
+def chunks_from_pdf(pdf_directory):
+    """
+    Chunks all pdfs from a directory
+    :param pdf_directory: directory of pdfs
+    :return: list of chunks
+    """
     docs = []
     for file in glob.glob(pdf_directory + "/*.pdf"):
         loader = PyPDFLoader(file)
@@ -35,7 +44,12 @@ def splits_from_pdf(pdf_directory):
     return splits
 
 
-def splits_from_text(text_directory):
+def chunks_from_text(text_directory):
+    """
+    Chunks all text files from a directory
+    :param text_directory: directory of text files
+    :return: list of chunks
+    """
     loader = DirectoryLoader(text_directory, loader_cls=TextLoader)  # , glob="**/*.txt")
     docs = loader.load()
 
@@ -46,36 +60,65 @@ def splits_from_text(text_directory):
     return splits
 
 
-def splitting(data_directory):
+def chunking(data_directory):
+    """
+    Automatically calls the correct chunking function, either for pdfs or for txt files
+    :param data_directory: directory of data, either ../pdf or ../text
+    :return: result from the corresponding chunking function
+    """
     if data_directory == "../pdf":
-        return splits_from_pdf(data_directory)
+        return chunks_from_pdf(data_directory)
     else:
-        return splits_from_text(data_directory)
+        return chunks_from_text(data_directory)
 
 
-def create_vector_store(db_directory, splits, embedding):
-    print("---CREATING VECTOR STORE (this may take a while)---")
+def create_vector_store(db_directory, chunks, embedding):
+    """
+    Creates a chromaDB vector embedding store for all chunks of the data
+    :param db_directory: directory to persistently store the resulting vector store
+    :param chunks: list of chunks of data
+    :param embedding: embedding function
+    :return: retriever on vector store
+    """
+    print("Creating vector store (this may take a while)")
 
     # create vector store and index
-    vectorstore = Chroma.from_documents(documents=splits, collection_name="rag-chroma", embedding=embedding,
+    vectorstore = Chroma.from_documents(documents=chunks, collection_name="rag-chroma", embedding=embedding,
                                         persist_directory=db_directory)
 
     return vectorstore.as_retriever()
 
 
 def fetch_vector_store(db_directory, embedding):
-    print("---FETCHING VECTOR STORE---")
+    """
+    Fetches a chromaDB vector embedding store of the data
+    :param db_directory: directory where vector store is persistently stored
+    :param embedding: embedding function
+    :return: retriever on vector store
+    """
+    print("Fetching vector store")
     vectorstore = Chroma(collection_name="rag-chroma", embedding_function=embedding, persist_directory=db_directory)
     return vectorstore.as_retriever()
 
 
 def retrieve(retrieving, question):
-    print("---RETRIEVE---")
+    """
+    Retrieve relevant documents from vector store based on query/question
+    :param retrieving: retriever
+    :param question: user query
+    :return: relevant documents
+    """
+    print("Retrieving")
     documents = retrieving.get_relevant_documents(question)
     return documents
 
 
 def context_formatting(documents):
+    """
+    Formats retrieved documents to be used as context for the LLM
+    :param documents: retrieved documents
+    :return: formatted documents
+    """
     content = ""
     for index, document in enumerate(documents):
         content = content + "[doc" + str(index + 1) + "]=" + document.page_content.replace("\n", " ") + "\n\n"
@@ -83,6 +126,11 @@ def context_formatting(documents):
 
 
 def source_formatting(documents):
+    """
+    Formats retrieved documents to be used as sources for the user
+    :param documents: retrieved documents
+    :return: formatted documents
+    """
     sources = ""
     for index, document in enumerate(documents):
         sources = sources + "[doc" + str(index + 1) + "]=" + document.metadata["source"] + "\n\n"
@@ -90,7 +138,14 @@ def source_formatting(documents):
 
 
 def generate(question, documents, use_llm):
-    print("---GENERATE---")
+    """
+    LLM generates a response based on the question (user query), added context (retrieved documents), and a prompt
+    :param question: user query
+    :param documents: retrieved documents, formatted
+    :param use_llm: which llm to use
+    :return: LLM generated response
+    """
+    print("Generating")
     # adapted from https://smith.langchain.com/hub/rlm/rag-prompt
     rag_prompt = ChatPromptTemplate.from_template("You are an assistant for question-answering tasks. Use the "
                                                   "following pieces of retrieved context to answer the question. If "
@@ -110,21 +165,24 @@ def generate(question, documents, use_llm):
 
 
 if __name__ == "__main__":
-    print("---STARTING PROGRAM---")
+    """
+    main function
+    """
+    print("Starting program")
 
     use_llm = "mistral:instruct"
     embedding = GPT4AllEmbeddings()
 
     # change to ../text if you want to use the .txt files stored in the 'text' folder
     # change to ../pdf if you want to use the .pdf files stored in the 'pdf' folder
-    data_directory = '../pdf'
+    data_directory = '../text'
 
     db_directory = '../chroma_db'
 
     # creating or fetching vector store
     retriever = None
     if not os.path.isdir(db_directory):
-        retriever = create_vector_store(db_directory, splitting(data_directory), embedding)
+        retriever = create_vector_store(db_directory, chunking(data_directory), embedding)
     else:
         retriever = fetch_vector_store(db_directory, embedding)
 
