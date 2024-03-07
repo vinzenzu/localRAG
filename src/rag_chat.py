@@ -1,8 +1,16 @@
-#pip install --quiet langchain_community langchain gpt4all chromadb
+#TODO
+# document sources for chunks
+# web interface (see video)
+# compare performance vs vanilla network, perhaps test rag on unseen scientific papers
+
+#pip install --quiet langchain_community langchain gpt4all chromadb unstructured tiktoken gradio
 
 #import pprint
 
 import os
+
+import gradio as gr
+from gradio.themes.base import Base
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import DirectoryLoader
@@ -18,32 +26,40 @@ def create_vector_store(db_directory, data_directory, embedding):
     loader = DirectoryLoader(data_directory)  # , glob="**/*.txt")
     docs = loader.load()
 
-    # Split
-    text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-        chunk_size=500, chunk_overlap=100
-    )
-    all_splits = text_splitter.split_documents(docs)
+    # split text into chunks with overlap
+    splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=500, chunk_overlap=100)
+    splits = splitter.split_documents(docs)
 
-    # Index
-    vectorstore = Chroma.from_documents(
-        documents=all_splits,
-        collection_name="rag-chroma",
-        embedding=embedding,
-        persist_directory=db_directory
-    )
+    # create vector store and index
+    vectorstore = Chroma.from_documents(documents=splits, collection_name="rag-chroma", embedding=embedding, persist_directory=db_directory)
+
     return vectorstore.as_retriever()
 
 
 def fetch_vector_store(db_directory, embedding):
     print("---FETCHING VECTOR STORE---")
-    vectorstore = Chroma(persist_directory=db_directory, embedding_function=embedding)
+    vectorstore = Chroma(collection_name="rag-chroma", embedding_function=embedding, persist_directory=db_directory) # Chroma(persist_directory=db_directory, embedding_function=embedding)
     return vectorstore.as_retriever()
 
 
-def retrieve(question):
+def retrieve(retrieving, question):
     print("---RETRIEVE---")
-    documents = retriever.get_relevant_documents(question)
+    documents = retrieving.get_relevant_documents(question)
     return documents
+
+
+def context_formatting(documents):
+    content = ""
+    for index, document in enumerate(documents):
+        content = content + "[doc" + str(index+1) + "]=" + document.page_content.replace("\n", " ") + "\n\n"
+    return content
+
+
+def source_formatting(documents):
+    sources = ""
+    for index, document in enumerate(documents):
+        sources = sources + "[doc" + str(index+1) + "]=" + document.metadata["source"] + "\n\n"
+    return sources
 
 
 def generate(question, documents, use_llm):
@@ -52,7 +68,10 @@ def generate(question, documents, use_llm):
     rag_prompt = ChatPromptTemplate.from_template("You are an assistant for question-answering tasks. Use the "
                                                   "following pieces of retrieved context to answer the question. If "
                                                   "you don't know the answer, just say that you don't know. Keep the "
-                                                  "answer concise, truthful, and informative.\n"
+                                                  "answer concise, truthful, and informative. If you decide to use a "
+                                                  "source, you must mention in which document you found specific "
+                                                  "information. Sources are indicated in the context by "
+                                                  "[doc<doc_number>].\n"
                                                   "Question: {question} \n"
                                                   "Context: {context} \n"
                                                   "Answer:")
@@ -76,10 +95,34 @@ if __name__ == "__main__":
     else:
         retriever = fetch_vector_store(db_directory, embedding)
 
-    input_question = "How do you compile regular expressions in Python?"
-    docs = retrieve(input_question)
-    output = generate(input_question, docs, use_llm)
+    #input_question2 = "How do you compile regular expressions in Python?"
+    #input_question = "Explain the None type in Python."
+    #docs = retrieve(retriever, input_question)
+    #output = generate(input_question, context_formatting(docs), use_llm)
+
+    def complete_rag(question):
+        docs = retrieve(retriever, question)
+        output = generate(question, context_formatting(docs), use_llm)
+        return source_formatting(docs), output
+
+    with gr.Blocks(theme=Base(), title="Q&A on your data with RAG") as demo:
+        gr.Markdown("# Q&A on your data with RAG")
+        textbox = gr.Textbox(label="Question:")
+        with gr.Row():
+            button = gr.Button("Submit", variant="primary")
+        with gr.Column():
+            output1 = gr.Textbox(lines=1, max_lines=10, label="Sources")
+            output2 = gr.Textbox(lines=1, max_lines=10, label="Generated output by LLM, incorporating retrieved documents")
+
+        button.click(complete_rag, textbox, outputs=[output1, output2])
+
+    demo.launch()
 
     #pprint.pprint(output)
 
-    print(output)
+    #print(output)
+    #print(source_formatting(docs))
+
+    #print(docs)
+    #print(source_formatting(docs))
+    #print(context_formatting(docs))
