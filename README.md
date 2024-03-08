@@ -27,6 +27,8 @@ Along the way, you may be asked to install Microsoft C++ Build Tools. You can do
 
 #### Notes
 
+Your computer may not be powerful enough to run Mistral 7B. It may be powerful enough to run the more performant Mixtral. It is your task to figure this out.
+
 You can run the ```pip``` command in the Python terminal in PyCharm, for example, by clicking on the terminal button in the bottom left column of the interface. This command should grab all necessary dependencies to run the code. If, for an unknown reason, running the code (step 8) gives an error, and it prompts you to install a Python package to be able to run the code, please do so.
 
 If you ever want to switch, change, and modify which data you use for RAG, simply delete the chroma_db folder that gets created when the data is prepared for RAG during the first run of the program and re-run the program to create a new vector database.
