@@ -20,10 +20,10 @@ Reproducable steps to run this code:
 
 #### Usage
 
-1. Start the program. Here, I am using PyCharm and have the rag_chat.py file opened. If you can't find the run button, simply right-click into the text of the rag_chat.py file and select the option to run the file. [image]
-2. Once everything is ready, a local IP address will be printed to the console. Copy this IP address, and paste it into a browser. (To the left in the picture, you can also spot the terminal button, the fifth one from the top.) [image]
-3. Type in your question. [image]
-4. Patiently wait for the model response. And tada! You get information from your own documents, in this case information I stored about a new Mistral model that had not been released before the model cutoff. [image]
+1. Start the program. Here, I am using PyCharm and have the rag_chat.py file opened. If you can't find the run button, simply right-click into the text of the rag_chat.py file and select the option to run the file.  ![Run button in PyCharm](.images_readme/run_pycharm.JPG)
+2. Once everything is ready, a local IP address will be printed to the console. Copy this IP address, and paste it into a browser. (To the left in the picture, you can also spot the terminal button, the fifth one from the top.)  ![IP Address in the console with buttons including the Terminal button to the left](.images_readme/url_terminal.JPG)
+3. Type in your question.  ![Web interface for the RAG app](.images_readme/web_interface.JPG)
+4. Patiently wait for the model response. And tada! You get information from your own documents, in this case information I stored about a new Mistral model that had not been released before the model cutoff.  ![Model response](.images_readme/response.JPG)
 
 #### Notes
 
