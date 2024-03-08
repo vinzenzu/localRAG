@@ -7,7 +7,7 @@
 
 Created & tested using Python 3.12.    
 Reproducable steps to run this code:  
-0. Along the way, you may be asked to install Microsoft C++ Build Tools. You can do so from here: https://visualstudio.microsoft.com/visual-cpp-build-tools/
+Along the way, you may be asked to install Microsoft C++ Build Tools. You can do so from here: https://visualstudio.microsoft.com/visual-cpp-build-tools/
 1. Download or clone this repository.
 2. Install Ollama.
 3. In the terminal (e.g. PowerShell), run ```ollama pull mistral:instruct``` (or pull a different model of your liking, but make sure to change the variable use_llm in the Python code accordingly)
