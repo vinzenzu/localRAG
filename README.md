@@ -12,7 +12,7 @@ Along the way, you may be asked to install Microsoft C++ Build Tools. You can do
 2. Install Ollama.
 3. In the terminal (e.g. PowerShell), run ```ollama pull mistral:instruct``` (or pull a different model of your liking, but make sure to change the variable use_llm in the Python code accordingly)
 4. Set up a new Python virtual environment. For best convenience, use an IDE like PyCharm for this.
-5. To install the necessary packages to the venv (virtual environment), run ```pip install gradio langchain gpt4all chromadb pypdf tiktoken``` in the terminal of the venv. If you don't want status updates printed to your terminal, run it with the quiet flag: ```pip install --quiet gradio langchain gpt4all chromadb pypdf tiktoken```.
+5. To install the necessary packages to the venv (virtual environment), run ```pip install gradio langchain gpt4all chromadb pypdf tiktoken``` in the terminal of the venv. If you don't want status updates printed to your terminal, run it with the quiet flag: ```pip install --quiet gradio langchain gpt4all chromadb pypdf tiktoken```. The requirements.txt file can also take care of installing the necessary packages for you.
 6. Add either your pdf files to the pdf folder, or add your txt files to the text folder. Change the data_directory in the Python code according to which data you want to use for RAG.
 7. Start Ollama.
 8. Run the python file. The first run may take a while.
