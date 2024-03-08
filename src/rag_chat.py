@@ -1,8 +1,5 @@
 __author__ = "Vinzenz Richard Ulrich"
 
-#TODO
-# write documentation in readme
-
 # pip install gradio langchain gpt4all chromadb pypdf tiktoken
 # pip install --quiet gradio langchain gpt4all chromadb pypdf tiktoken
 
@@ -32,13 +29,14 @@ def chunks_from_pdf(pdf_directory):
     :param pdf_directory: directory of pdfs
     :return: list of chunks
     """
+    # fetching all pdfs from the directory and storing them as strings in a list
     docs = []
     for file in glob.glob(pdf_directory + "/*.pdf"):
         loader = PyPDFLoader(file)
         doc = loader.load()
         docs.extend(doc)
 
-    # split text into chunks with overlap
+    # split texts into chunks with overlap
     splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=500, chunk_overlap=100)
     splits = splitter.split_documents(docs)
     return splits
@@ -50,10 +48,11 @@ def chunks_from_text(text_directory):
     :param text_directory: directory of text files
     :return: list of chunks
     """
+    # fetch all txt files from the firectory and store them in a list
     loader = DirectoryLoader(text_directory, loader_cls=TextLoader)  # , glob="**/*.txt")
     docs = loader.load()
 
-    # split text into chunks with overlap
+    # split texts into chunks with overlap
     splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(chunk_size=500, chunk_overlap=100)
     splits = splitter.split_documents(docs)
 
@@ -157,10 +156,15 @@ def generate(question, documents, use_llm):
                                                   "Question: {question} \n"
                                                   "Context: {context} \n"
                                                   "Answer:")
-
+    # define LLM to be used and the temperature (creativity/randomness) of the model
     llm = ChatOllama(model=use_llm, temperature=0)
+
+    # define a LangChain chain
     chain = rag_prompt | llm | StrOutputParser()
+
+    # invoke chain with retrieved documents and the question (user query)
     output = chain.invoke({"context": documents, "question": question})
+
     return output
 
 
@@ -170,13 +174,18 @@ if __name__ == "__main__":
     """
     print("Starting program")
 
+    # define what LLM to use
     use_llm = "mistral:instruct"
+
+    # define what embedding model to use
     embedding = GPT4AllEmbeddings()
 
-    # change to ../text if you want to use the .txt files stored in the 'text' folder
-    # change to ../pdf if you want to use the .pdf files stored in the 'pdf' folder
+    # directory of the data files to do RAG on
+    # change to ../text if you want to use .txt files stored in the 'text' folder
+    # change to ../pdf if you want to use .pdf files stored in the 'pdf' folder
     data_directory = '../text'
 
+    # directory to persistently store the vector embedding store
     db_directory = '../chroma_db'
 
     # creating or fetching vector store
@@ -188,11 +197,18 @@ if __name__ == "__main__":
 
 
     def complete_rag(question):
+        """
+        The process of retrieval augmented generation
+        :param question: user query
+        :return: sources and LLM ouput, generated using retrieved documents
+        """
         docs = retrieve(retriever, question)
         output = generate(question, context_formatting(docs), use_llm)
         return source_formatting(docs), output
 
 
+    # for web view of prompting
+    # code below is copied from: https://www.youtube.com/watch?v=JEBDfGqrAUA (Project 2)
     with gr.Blocks(theme=Base(), title="Q&A on your data with RAG") as demo:
         gr.Markdown("# Q&A on your data with RAG")
         textbox = gr.Textbox(label="Question:")
