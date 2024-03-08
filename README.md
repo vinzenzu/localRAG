@@ -45,4 +45,6 @@ I have used these resources to guide and help me in writing the code:
 3. https://www.youtube.com/watch?v=E2shqsYwxck
 4. https://www.youtube.com/watch?v=JEBDfGqrAUA
 
+The .txt and .pdf data in this repository was taken from the sources linked here: https://github.com/dair-ai/ML-Papers-of-the-Week/tree/main#top-ml-papers-of-the-week-february-26---march-3---2024
+If you are the owner of the content and want me to remove it, contact me.
 I don't own any of the Python packages, programs, or other, used and do not have any affiliation with any of the used packages, programs, or other.
