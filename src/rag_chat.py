@@ -82,7 +82,7 @@ def create_vector_store(db_directory, chunks, embedding):
     print("Creating vector store (this may take a while)")
 
     # create vector store and index
-    vectorstore = Chroma.from_documents(documents=chunks, collection_name="rag-chroma", embedding=embedding,
+    vectorstore = Chroma.from_documents(documents=chunks, collection_name="chromemwah", embedding=embedding,
                                         persist_directory=db_directory)
 
     return vectorstore.as_retriever()
@@ -96,7 +96,7 @@ def fetch_vector_store(db_directory, embedding):
     :return: retriever on vector store
     """
     print("Fetching vector store")
-    vectorstore = Chroma(collection_name="rag-chroma", embedding_function=embedding, persist_directory=db_directory)
+    vectorstore = Chroma(collection_name="chromemwah", embedding_function=embedding, persist_directory=db_directory)
     return vectorstore.as_retriever()
 
 

@@ -23,7 +23,7 @@ Reproducable steps to run this code:
 1. Start the program. Here, I am using PyCharm and have the rag_chat.py file opened. If you can't find the run button, simply right-click into the text of the rag_chat.py file and select the option to run the file. [image]
 2. Once everything is ready, a local IP address will be printed to the console. Copy this IP address, and paste it into a browser. (To the left in the picture, you can also spot the terminal button, the fifth one from the top.) [image]
 3. Type in your question. [image]
-4. Patiently wait for the model response. [image]
+4. Patiently wait for the model response. And tada! You get information from your own documents, in this case information I stored about a new Mistral model that had not been released before the model cutoff. [image]
 
 #### Notes
 
@@ -33,6 +33,10 @@ If you ever want to switch, change, and modify which data you use for RAG, simpl
 
 If you are getting impatient, you can check whether the program is still running as intended by a) checking the status updates in the console, b) checking whether the model has already generated the response for you, and c) by opening the task manager and looking how much compute and memory Ollama or Python (when the vector store is still being created) is using.
 
+#### Improvements
+
+The performance of this RAG implementation can be improved. More documents could be retrieved, the retrieved documents could be re-ranked to pass on more relevant ones, a different embedding may yield better performance, a different language model may yield better performance, etc. I may implement some of these things in the future.
+
 #### Acknowledgements
 
 I have used these resources to guide and help me in writing the code:
@@ -41,4 +45,4 @@ I have used these resources to guide and help me in writing the code:
 3. https://www.youtube.com/watch?v=E2shqsYwxck
 4. https://www.youtube.com/watch?v=JEBDfGqrAUA
 
-
+I don't own any of the Python packages, programs, or other, used and do not have any affiliation with any of the used packages, programs, or other.
